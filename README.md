@@ -52,7 +52,7 @@ You can publish a client app info (both kind 0 and 13195) using the CLI. The CLI
 ```bash
 $ uma-auth-cli publish \
 --nsec nsec1mqxnulkqkcv0gc0dfrxz5kz7d3h665ve2dhjkrj8jmmxwm4st2zsjv2n5l \
---relay wss://nos.lol,wss://relay.primal.net \
+--relay wss://nos.lol --relay wss://relay.primal.net \
 --redirect-uri https://foo.test \
 --image https://foo.com/image.png \
 --nip05 _@foo.com \
