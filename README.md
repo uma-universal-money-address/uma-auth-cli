@@ -35,7 +35,7 @@ To generate a new nostr keypair, run:
 uma-auth-cli generate-key
 ```
 
-It will create and print a new keypair in hex and bech58 format:
+It will create and print a new keypair in hex and bech32 format:
 
 ```bash
 nsec1e792rulwmsjanw783x39r8vcm23c2hwcandwahaw6wh39rfydshqxhfm7x
