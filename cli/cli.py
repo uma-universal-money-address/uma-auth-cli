@@ -27,7 +27,7 @@ app = typer.Typer(
 
 
 @app.command(help="Generate a new nostr keypair.")
-def generate_key() -> None:
+def generate_key():
     print("Generating new keypair...")
     keys = Keys.generate()
     nsec = keys.secret_key()
@@ -116,7 +116,7 @@ def publish(
             help="Publish kind 13195 event.",
         ),
     ] = True,
-) -> None:
+):
     keys = Keys.parse(nsec)
     print("Publishing client app identity events...")
     print(f"Name: {name}")
@@ -222,8 +222,8 @@ async def lookup_client_app_info(public_key: PublicKey, relay: str):
     client = Client()
     await client.add_relays([relay])
     await client.connect()
-    filter = Filter().kinds([Kind(0), Kind(13195)]).author(public_key)
-    events = await client.get_events_of([filter], timedelta(seconds=10))
+    event_filter = Filter().kinds([Kind(0), Kind(13195)]).author(public_key)
+    events = await client.get_events_of([event_filter], timedelta(seconds=10))
     await client.disconnect()
     if not events:
         print("No events found")
