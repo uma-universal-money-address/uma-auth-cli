@@ -107,7 +107,7 @@ def publish(
             "-p",
             help="Publish kind 0 event.",
         ),
-    ] = True,
+    ] = False,
     include_kind_13195: Annotated[
         bool,
         typer.Option(
