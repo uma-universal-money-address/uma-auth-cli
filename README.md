@@ -47,7 +47,7 @@ pub hex: 8ee0df27b60f419181f1d5acfc68292e52915273a12da9825542dcb10e9fd24c
 
 ### Publishing client app info
 
-You can publish a client app info (both kind 0 and 13195) using the CLI. The CLI can publish these events in interactive prompt mode:
+You can publish a client app info (kind 13195 and optionally kind 0) using the CLI. The CLI can publish these events in interactive prompt mode:
 
 ```bash
 $ uma-auth-cli publish \
@@ -56,6 +56,7 @@ $ uma-auth-cli publish \
 --redirect-uri https://foo.test \
 --image https://foo.com/image.png \
 --nip05 _@foo.com \
+--include-0 \
 --name "Test CLI" \
 --description "A test client app"
 ```
