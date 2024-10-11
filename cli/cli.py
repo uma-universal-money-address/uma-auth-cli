@@ -103,16 +103,16 @@ def publish(
     include_kind_0: Annotated[
         bool,
         typer.Option(
-            "--include-0",
-            "-p",
+            "--include-0/--no-include-0",
+            "-p/-P",
             help="Publish kind 0 event.",
         ),
     ] = False,
     include_kind_13195: Annotated[
         bool,
         typer.Option(
-            "--13195",
-            "-c",
+            "--13195/--no-13195",
+            "-c/-C",
             help="Publish kind 13195 event.",
         ),
     ] = True,
