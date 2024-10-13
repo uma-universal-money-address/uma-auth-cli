@@ -5,18 +5,27 @@
 import asyncio
 import json
 from datetime import timedelta
+from typing import List, Optional
 
 import typer
 from nostr_sdk import (
+    Alphabet,
     Client,
+    Event,
     EventBuilder,
+    EventId,
     Filter,
     Keys,
     Kind,
+    KindEnum,
     Metadata,
     MetadataRecord,
+    Nip19Profile,
     NostrSigner,
     PublicKey,
+    SingleLetterTag,
+    Tag,
+    TagKind,
 )
 from typing_extensions import Annotated
 
@@ -212,13 +221,23 @@ def lookup(
             prompt=True,
         ),
     ],
+    authorities: Annotated[
+        Optional[list[str]],
+        typer.Option(
+            "--authorities",
+            "-a",
+            help="List of authority nprofiles who may have verified the 13195 event.",
+        ),
+    ] = None,
 ) -> None:
     print("Looking up client app info...")
     public_key = PublicKey.parse(npub)
-    asyncio.run(lookup_client_app_info(public_key, relay))
+    asyncio.run(lookup_client_app_info(public_key, relay, authorities))
 
 
-async def lookup_client_app_info(public_key: PublicKey, relay: str):
+async def lookup_client_app_info(
+    public_key: PublicKey, relay: str, authorities: Optional[list[str]]
+):
     client = Client()
     await client.add_relays([relay])
     await client.connect()
@@ -229,8 +248,139 @@ async def lookup_client_app_info(public_key: PublicKey, relay: str):
         print("No events found")
         return
 
+    identity_event = None
     for event in events:
-        print(json.dumps(json.loads(event.content()), indent=2))
+        if event.kind().as_u16() == 13195:
+            identity_event = event
+        print(json.dumps(json.loads(event.as_json()), indent=2))
+
+    if not authorities or not identity_event:
+        return
+
+    print("\n Looking for verifications...")
+    verification_events = await _find_authority_attestations(
+        identity_event, authorities
+    )
+    for event in verification_events:
+        print(json.dumps(json.loads(event.as_json()), indent=2))
+
+    if not verification_events:
+        print("No verifications found")
+
+
+async def _find_authority_attestations(
+    identity_event: Event,
+    authorities: List[str],
+) -> List[Event]:
+    try:
+        authority_nprofiles = [
+            Nip19Profile.from_bech32(authority) for authority in authorities
+        ]
+    except Exception:
+        print("Invalid NIP19 profile in CLIENT_APP_AUTHORITIES.")
+        return []
+
+    client = Client()
+    for nprofile in authority_nprofiles:
+        for relay in nprofile.relays():
+            await client.add_relay(relay)
+
+    authority_pubkeys = [nprofile.public_key() for nprofile in authority_nprofiles]
+
+    await client.connect()
+    filter = (
+        Filter()
+        .authors(authority_pubkeys)
+        .kinds(
+            [
+                Kind.from_enum(KindEnum.LABEL()),  # pyre-ignore[6]
+            ]
+        )
+        .custom_tag(SingleLetterTag.uppercase(Alphabet.L), ["nip68.client_app"])
+        .event(identity_event.id())
+    )
+    verification_events = await client.get_events_of(
+        filters=[filter], timeout=timedelta(seconds=10)
+    )
+    await client.disconnect()
+
+    return verification_events
+
+
+@app.command(help="Attest to a client app's identity as an app authority.")
+def attest(
+    nsec: Annotated[
+        str,
+        typer.Option(
+            "--nsec",
+            "-s",
+            help="Secret key of the authority to sign the attestation with.",
+            prompt=True,
+        ),
+    ],
+    appNpub: Annotated[
+        str,
+        typer.Option(
+            "--app-npub",
+            "-a",
+            help="Public key of the client app.",
+            prompt=True,
+        ),
+    ],
+    relay: Annotated[
+        str,
+        typer.Option(
+            "--relay",
+            "-r",
+            help="Relay to publish the attestation to.",
+            prompt=True,
+        ),
+    ],
+    eventId: Annotated[
+        str,
+        typer.Option(
+            "--event-id",
+            "-e",
+            help="13195 event id to attest to.",
+            prompt=True,
+        ),
+    ],
+):
+    keys = Keys.parse(nsec)
+    public_key = PublicKey.parse(appNpub)
+    print("Attesting to client app's identity...")
+    typer.confirm(
+        "This will override any existing attestation. Are you sure?", abort=True
+    )
+    asyncio.run(
+        attest_to_client_app(
+            keys=keys,
+            public_key=public_key,
+            relay=relay,
+            event_id=eventId,
+        )
+    )
+
+
+async def attest_to_client_app(
+    keys: Keys,
+    public_key: PublicKey,
+    relay: str,
+    event_id: str,
+):
+    signer = NostrSigner.keys(keys)
+    client = Client(signer)
+    await client.add_relays([relay])
+    await client.connect()
+
+    builder = EventBuilder.label("nip68.client_app", ["verified"]).add_tags(
+        [Tag.event(EventId.parse(event_id)), Tag.public_key(public_key)]
+    )
+    print("Publishing label event...")
+    await client.send_event_builder(builder)
+    await client.disconnect()
+
+    print("Attestation published")
 
 
 if __name__ == "__main__":
