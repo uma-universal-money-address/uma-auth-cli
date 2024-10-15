@@ -224,9 +224,9 @@ def lookup(
     authorities: Annotated[
         Optional[list[str]],
         typer.Option(
-            "--authorities",
+            "--authority",
             "-a",
-            help="List of authority nprofiles who may have verified the 13195 event.",
+            help="Authority nprofiles who may have verified the 13195 event.",
         ),
     ] = None,
 ) -> None:

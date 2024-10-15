@@ -83,7 +83,7 @@ First, find the app 13195 event ID by using the lookup command. Then, you can at
 $ uma-auth-cli attest \
 --nsec nsec1mqxnulkqkcv0gc0dfrxz5kz7d3h665ve2dhjkrj8jmmxwm4st2zsjv2n5l \
 --relay wss://nos.lol \
---app-pubkey npub13msd7fakpaqerq036kk0c6pf9effz5nn5yk6nqj4gtwtzr5l6fxq64z8x5 \
+--app-npub npub13msd7fakpaqerq036kk0c6pf9effz5nn5yk6nqj4gtwtzr5l6fxq64z8x5 \
 --event-id bb892e7d7a26e88fe668e65c75eed7fd11619bf6512e8fe12d5bf3ba5db10c90
 ```
 
@@ -97,7 +97,8 @@ $ uma-auth-cli attest \
 You can look up attestations using the CLI:
 
 ```bash
-$ uma-auth-cli attestations \
+$ uma-auth-cli lookup \
 --authority nprofile1qqstse98yvaykl3k2yez3732tmsc9vaq8c3uhex0s4qp4dl8fczmp9spp4mhxue69uhkummn9ekx7mq26saje \
---event-id bb892e7d7a26e88fe668e65c75eed7fd11619bf6512e8fe12d5bf3ba5db10c90
+--npub npub13msd7fakpaqerq036kk0c6pf9effz5nn5yk6nqj4gtwtzr5l6fxq64z8x5 \
+--relay wss://nos.lol
 ```
