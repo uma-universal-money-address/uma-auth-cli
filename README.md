@@ -70,3 +70,35 @@ $ uma-auth-cli lookup \
 --npub npub13msd7fakpaqerq036kk0c6pf9effz5nn5yk6nqj4gtwtzr5l6fxq64z8x5 \
 --relay wss://nos.lol
 ```
+
+### Authority Verification
+
+As per [NIP-68](https://github.com/nostr-protocol/nips/pull/1383/), you can act as the authority or check authority attestations using the CLI.
+
+#### Attesting to an app's identity
+
+First, find the app 13195 event ID by using the lookup command. Then, you can attest to the app's identity:
+
+```bash
+$ uma-auth-cli attest \
+--nsec nsec1mqxnulkqkcv0gc0dfrxz5kz7d3h665ve2dhjkrj8jmmxwm4st2zsjv2n5l \
+--relay wss://nos.lol \
+--app-npub npub13msd7fakpaqerq036kk0c6pf9effz5nn5yk6nqj4gtwtzr5l6fxq64z8x5 \
+--event-id bb892e7d7a26e88fe668e65c75eed7fd11619bf6512e8fe12d5bf3ba5db10c90
+```
+
+- `--nsec` is the nostr keypair secret key of the authority attesting to the app's identity.
+- `--relay` is the relay to use to publish the attestation.
+- `--app-npub` is the clients app's public key.
+- `--event-id` is the event ID of the app's 13195 event.
+
+#### Looking up attestations
+
+You can look up attestations using the CLI:
+
+```bash
+$ uma-auth-cli lookup \
+--authority nprofile1qqstse98yvaykl3k2yez3732tmsc9vaq8c3uhex0s4qp4dl8fczmp9spp4mhxue69uhkummn9ekx7mq26saje \
+--npub npub13msd7fakpaqerq036kk0c6pf9effz5nn5yk6nqj4gtwtzr5l6fxq64z8x5 \
+--relay wss://nos.lol
+```
